@@ -30,10 +30,23 @@
 #define CONFIG_PARTITION_UUIDS
 #define CONFIG_CMD_PART
 
+#ifdef CONFIG_CMD_BOOTA
+#define BOOTENV_ANDROID_BOOT_SCAN \
+		"scan_dev_for_android=" \
+			"echo Probe Android Boot; " \
+			"boota ${devtype} ${devnum}; " \
+			"echo Failed to boot Android: continuing...;\0"
+#else
+#define BOOTENV_ANDROID_BOOT_SCAN \
+		"scan_dev_for_android=;\0"
+#endif
+
 #define BOOTENV_SHARED_BLKDEV_BODY(devtypel) \
 		"if " #devtypel " dev ${devnum}; then " \
 			"setenv devtype " #devtypel "; " \
 			"run scan_dev_for_boot_part; " \
+			"run scan_dev_for_android; " \
+			"run scan_dev_for_boot; " \
 		"fi\0"
 
 #define BOOTENV_SHARED_BLKDEV(devtypel) \
@@ -234,6 +247,7 @@
 				"run scan_dev_for_boot; "                 \
 			"fi; "                                            \
 		"done\0"                                                  \
+	BOOTENV_ANDROID_BOOT_SCAN                                         \
 	\
 	BOOT_TARGET_DEVICES(BOOTENV_DEV)                                  \
 	\
